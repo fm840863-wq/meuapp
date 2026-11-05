@@ -1,0 +1,616 @@
+DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu App</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, sans-serif; background: #f2f2f7; margin: 0; padding: 16px; text-align: center; }
+    h1 { color: #1c1c1e; margin: 20px 0 10px; font-size: 24px; }
+    h2 { font-size: 16px; color: #1c1c1e; text-align: left; max-width: 340px; margin: 22px auto 6px; }
+    .botao { display: block; background: #007aff; color: white; padding: 14px; margin: 10px auto; border-radius: 12px; max-width: 340px; font-size: 17px; border: none; width: 100%; font-weight: 500; }
+    .botao:active { background: #0051d5; }
+    .botao.verde { background: #34c759; }
+    .botao.voltar { background: #8e8e93; margin-top: 25px; }
+    .tela { display: none; }
+    .tela.ativa { display: block; }
+    input, select { display: block; width: 100%; max-width: 340px; margin: 8px auto; padding: 12px; font-size: 16px; border: 1px solid #c7c7cc; border-radius: 10px; background: white; }
+    .card { background: white; border-radius: 14px; padding: 14px 16px; max-width: 340px; margin: 10px auto; text-align: left; }
+    .card .label { font-size: 13px; color: #8e8e93; margin-bottom: 4px; }
+    .card .valor { font-size: 22px; font-weight: bold; color: #1c1c1e; }
+    .card .valor.negativo { color: #ff3b30; }
+    .card .valor.verde { color: #248a3d; }
+    .item { background: white; padding: 12px; border-radius: 10px; margin: 0 auto 8px; display: flex; justify-content: space-between; align-items: center; max-width: 340px; text-align: left; }
+    .item-info { font-size: 13px; color: #3a3a3c; flex: 1; }
+    .item-info strong { display: block; font-size: 16px; color: #1c1c1e; margin-bottom: 2px; }
+    .btn-apagar { background: #ff3b30; color: white; border: none; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+    .btn-pagar { background: #34c759; color: white; border: none; border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+    .vazio { color: #8e8e93; font-size: 14px; text-align: center; margin: 10px 0; }
+    .vencido { color: #ff3b30; font-weight: 500; }
+    .pago { opacity: 0.6; }
+    .dia-titulo { max-width: 340px; margin: 16px auto 6px; text-align: left; font-size: 14px; font-weight: 600; color: #1c1c1e; }
+    .tag { display: inline-block; background: #e5f0ff; color: #0051d5; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-right: 6px; }
+    .tag.concluido { background: #d1f5d9; color: #248a3d; }
+    .grid2 { display: flex; gap: 8px; max-width: 340px; margin: 8px auto; }
+    .grid2 input { margin: 0; }
+    .livro-card { background: white; border-radius: 14px; padding: 14px; max-width: 340px; margin: 10px auto; text-align: left; }
+    .livro-titulo { font-size: 17px; font-weight: 600; color: #1c1c1e; }
+    .livro-autor { font-size: 13px; color: #8e8e93; margin-bottom: 10px; }
+    .progresso-bar { background: #e5e5ea; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 6px; }
+    .progresso-fill { background: #007aff; height: 100%; width: 0%; transition: width 0.3s; }
+    .progresso-fill.completo { background: #34c759; }
+    .progresso-texto { font-size: 12px; color: #3a3a3c; margin-bottom: 10px; }
+    .livro-acoes { display: flex; gap: 6px; }
+    .livro-acoes input { margin: 0; padding: 8px; font-size: 14px; flex: 1; }
+    .btn-leitura { background: #007aff; color: white; border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 500; white-space: nowrap; }
+
+    /* Banner de lembretes */
+    .banner { background: #fff3cd; color: #856404; border-radius: 10px; padding: 12px 40px 12px 12px; margin: 0 auto 12px; max-width: 340px; text-align: left; font-size: 14px; border: 1px solid #ffeeba; position: relative; line-height: 1.4; }
+    .banner strong { display: block; margin-bottom: 4px; font-size: 15px; }
+    .banner .fechar { position: absolute; top: 6px; right: 8px; background: none; border: none; font-size: 20px; color: #856404; padding: 4px; line-height: 1; }
+
+    /* Ajustes */
+    .ajuste-item { background: white; border-radius: 10px; padding: 12px; max-width: 340px; margin: 8px auto; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+    .ajuste-item label { font-size: 15px; color: #1c1c1e; }
+    .ajuste-item input[type="checkbox"] { width: auto; margin: 0 8px 0 0; transform: scale(1.4); }
+    .ajuste-item input[type="time"] { width: 110px; margin: 0; padding: 8px; }
+    .status { max-width: 340px; margin: 8px auto; font-size: 14px; color: #3a3a3c; text-align: left; }
+  </style>
+</head>
+<body>
+
+  <div id="banner-lembretes" class="banner" style="display:none"></div>
+
+  <!-- INÍCIO -->
+  <div id="tela-inicio" class="tela ativa">
+    <h1>Meu App</h1>
+    <p>Finanças, treinos e leitura</p>
+    <button class="botao" onclick="mostrarTela('financas')">💰 Finanças</button>
+    <button class="botao" onclick="mostrarTela('treinos')">🏋️ Treinos</button>
+    <button class="botao" onclick="mostrarTela('leitura')">📚 Leitura</button>
+    <button class="botao" onclick="mostrarTela('ajustes')">⚙️ Ajustes</button>
+  </div>
+
+  <!-- FINANÇAS -->
+  <div id="tela-financas" class="tela">
+    <h1>💰 Finanças</h1>
+    <div class="card"><div class="label">Saldo disponível</div><div class="valor" id="saldo">R$ 0,00</div></div>
+    <div class="card"><div class="label">Contas a pagar</div><div class="valor negativo" id="a-pagar">R$ 0,00</div></div>
+
+    <h2>➕ Adicionar receita</h2>
+    <input id="receita-valor" type="number" inputmode="decimal" step="0.01" placeholder="Valor (ex: 2500.00)">
+    <select id="receita-categoria">
+      <option>Salário</option><option>Extra</option><option>Freelance</option><option>Presente</option><option>Outros</option>
+    </select>
+    <button class="botao verde" onclick="adicionarReceita()">Adicionar receita</button>
+
+    <h2>➖ Adicionar gasto</h2>
+    <input id="gasto-valor" type="number" inputmode="decimal" step="0.01" placeholder="Valor (ex: 5.50)">
+    <select id="gasto-categoria">
+      <option>Alimentação</option><option>Transporte</option><option>Moradia</option><option>Saúde</option><option>Lazer</option><option>Trabalho</option><option>Outros</option>
+    </select>
+    <button class="botao" onclick="adicionarGasto()">Adicionar gasto</button>
+
+    <h2>📄 Adicionar conta a pagar</h2>
+    <input id="conta-valor" type="number" inputmode="decimal" step="0.01" placeholder="Valor (ex: 800.00)">
+    <input id="conta-descricao" type="text" placeholder="Descrição (ex: Aluguel)">
+    <input id="conta-vencimento" type="date">
+    <button class="botao" onclick="adicionarConta()">Adicionar conta</button>
+
+    <h2>📄 Contas pendentes</h2>
+    <div id="lista-contas"></div>
+    <h2>➖ Gastos registrados</h2>
+    <div id="lista-gastos"></div>
+    <h2>➕ Receitas registradas</h2>
+    <div id="lista-receitas"></div>
+
+    <button class="botao voltar" onclick="mostrarTela('inicio')">Voltar</button>
+  </div>
+
+  <!-- TREINOS -->
+  <div id="tela-treinos" class="tela">
+    <h1>🏋️ Treinos</h1>
+    <div class="card"><div class="label">🔥 Streak (dias seguidos)</div><div class="valor" id="streak">0</div></div>
+    <div class="card"><div class="label">📅 Treinos neste mês</div><div class="valor" id="total-mes">0</div></div>
+
+    <h2>➕ Registrar exercício</h2>
+    <input id="treino-data" type="date">
+    <select id="treino-tipo">
+      <option>Treino A</option><option>Treino B</option><option>Treino C</option>
+      <option>Push</option><option>Pull</option><option>Legs</option><option>Cardio</option><option>Outro</option>
+    </select>
+    <input id="treino-exercicio" type="text" placeholder="Exercício (ex: Supino)">
+    <div class="grid2">
+      <input id="treino-series" type="number" inputmode="numeric" placeholder="Séries">
+      <input id="treino-reps" type="number" inputmode="numeric" placeholder="Reps">
+    </div>
+    <input id="treino-carga" type="number" inputmode="decimal" step="0.5" placeholder="Carga em kg (opcional)">
+    <button class="botao verde" onclick="adicionarTreino()">Registrar exercício</button>
+
+    <h2>📜 Histórico</h2>
+    <div id="lista-treinos"></div>
+    <button class="botao voltar" onclick="mostrarTela('inicio')">Voltar</button>
+  </div>
+
+  <!-- LEITURA -->
+  <div id="tela-leitura" class="tela">
+    <h1>📚 Leitura</h1>
+    <div class="card"><div class="label">🔥 Streak de leitura</div><div class="valor" id="leitura-streak">0</div></div>
+    <div class="card"><div class="label">📅 Páginas lidas neste mês</div><div class="valor" id="leitura-paginas-mes">0</div></div>
+
+    <h2>➕ Adicionar livro</h2>
+    <input id="livro-titulo" type="text" placeholder="Título">
+    <input id="livro-autor" type="text" placeholder="Autor (opcional)">
+    <input id="livro-total" type="number" inputmode="numeric" placeholder="Total de páginas">
+    <button class="botao verde" onclick="adicionarLivro()">Adicionar livro</button>
+
+    <h2>📚 Meus livros</h2>
+    <div id="lista-livros"></div>
+    <h2>📜 Últimas sessões</h2>
+    <div id="lista-sessoes"></div>
+    <button class="botao voltar" onclick="mostrarTela('inicio')">Voltar</button>
+  </div>
+
+  <!-- AJUSTES -->
+  <div id="tela-ajustes" class="tela">
+    <h1>⚙️ Ajustes</h1>
+
+    <h2>🔔 Lembretes diários</h2>
+    <div class="ajuste-item">
+      <div><input type="checkbox" id="lembrete-gastos-ativo"><label for="lembrete-gastos-ativo">💰 Gastos</label></div>
+      <input type="time" id="lembrete-gastos-horario">
+    </div>
+    <div class="ajuste-item">
+      <div><input type="checkbox" id="lembrete-treinos-ativo"><label for="lembrete-treinos-ativo">🏋️ Treinos</label></div>
+      <input type="time" id="lembrete-treinos-horario">
+    </div>
+    <div class="ajuste-item">
+      <div><input type="checkbox" id="lembrete-leitura-ativo"><label for="lembrete-leitura-ativo">📚 Leitura</label></div>
+      <input type="time" id="lembrete-leitura-horario">
+    </div>
+    <button class="botao verde" onclick="salvarAjustes()">Salvar lembretes</button>
+
+    <h2>📱 Notificações do sistema</h2>
+    <p class="status" id="status-notificacao"></p>
+    <button class="botao" onclick="pedirPermissaoNotificacao()">Ativar notificações</button>
+    <button class="botao" onclick="testarNotificacao()">Testar notificação</button>
+
+    <button class="botao voltar" onclick="mostrarTela('inicio')">Voltar</button>
+  </div>
+
+  <script>
+    // ---------- NAVEGAÇÃO ----------
+    function mostrarTela(nome) {
+      document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa'));
+      const tela = document.getElementById('tela-' + nome);
+      if (tela) tela.classList.add('ativa');
+      if (nome === 'financas') renderizarFinancas();
+      if (nome === 'treinos') renderizarTreinos();
+      if (nome === 'leitura') renderizarLeitura();
+      if (nome === 'ajustes') preencherAjustesForm();
+      verificarLembretes();
+    }
+
+    // ---------- UTIL ----------
+    function pegar(chave) {
+      try { return JSON.parse(localStorage.getItem(chave)) || []; }
+      catch (e) { return []; }
+    }
+    function salvar(chave, lista) { localStorage.setItem(chave, JSON.stringify(lista)); }
+    function dinheiro(n) { return 'R$ ' + n.toFixed(2).replace('.', ','); }
+    function hojeISO() { return new Date().toISOString(); }
+    function hojeYMD() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+    function novoId() { return Date.now() + '-' + Math.floor(Math.random() * 1000); }
+    function escapeHtml(texto) {
+      return String(texto).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ---------- FINANÇAS ----------
+    function adicionarReceita() {
+      const campo = document.getElementById('receita-valor');
+      const valor = parseFloat(campo.value);
+      if (isNaN(valor) || valor <= 0) { alert('Digite um valor maior que zero.'); return; }
+      const lista = pegar('receitas');
+      lista.push({ id: novoId(), valor: valor, categoria: document.getElementById('receita-categoria').value, data: hojeISO() });
+      salvar('receitas', lista); campo.value = ''; renderizarFinancas(); verificarLembretes();
+    }
+    function apagarReceita(id) { salvar('receitas', pegar('receitas').filter(r => r.id !== id)); renderizarFinancas(); }
+    function adicionarGasto() {
+      const campo = document.getElementById('gasto-valor');
+      const valor = parseFloat(campo.value);
+      if (isNaN(valor) || valor <= 0) { alert('Digite um valor maior que zero.'); return; }
+      const lista = pegar('gastos');
+      lista.push({ id: novoId(), valor: valor, categoria: document.getElementById('gasto-categoria').value, data: hojeISO() });
+      salvar('gastos', lista); campo.value = ''; renderizarFinancas(); verificarLembretes();
+    }
+    function apagarGasto(id) { salvar('gastos', pegar('gastos').filter(g => g.id !== id)); renderizarFinancas(); }
+    function adicionarConta() {
+      const campoValor = document.getElementById('conta-valor');
+      const campoDesc = document.getElementById('conta-descricao');
+      const campoVenc = document.getElementById('conta-vencimento');
+      const valor = parseFloat(campoValor.value);
+      const descricao = campoDesc.value.trim();
+      const vencimento = campoVenc.value;
+      if (isNaN(valor) || valor <= 0) { alert('Digite um valor maior que zero.'); return; }
+      if (!descricao) { alert('Digite uma descrição.'); return; }
+      if (!vencimento) { alert('Escolha a data de vencimento.'); return; }
+      const lista = pegar('contas');
+      lista.push({ id: novoId(), valor: valor, descricao: descricao, vencimento: vencimento, pago: false });
+      salvar('contas', lista);
+      campoValor.value = ''; campoDesc.value = ''; campoVenc.value = '';
+      renderizarFinancas();
+    }
+    function pagarConta(id) { salvar('contas', pegar('contas').map(c => { if (c.id === id) c.pago = true; return c; })); renderizarFinancas(); }
+    function desfazerPagamento(id) { salvar('contas', pegar('contas').map(c => { if (c.id === id) c.pago = false; return c; })); renderizarFinancas(); }
+    function apagarConta(id) { salvar('contas', pegar('contas').filter(c => c.id !== id)); renderizarFinancas(); }
+
+    function renderizarFinancas() {
+      const receitas = pegar('receitas');
+      const gastos = pegar('gastos');
+      const contas = pegar('contas');
+      const totalReceitas = receitas.reduce((s, r) => s + r.valor, 0);
+      const totalGastos = gastos.reduce((s, g) => s + g.valor, 0);
+      const contasPagas = contas.filter(c => c.pago).reduce((s, c) => s + c.valor, 0);
+      const contasPendentes = contas.filter(c => !c.pago);
+      const totalAPagar = contasPendentes.reduce((s, c) => s + c.valor, 0);
+      const saldo = totalReceitas - totalGastos - contasPagas;
+      const saldoEl = document.getElementById('saldo');
+      saldoEl.textContent = dinheiro(saldo);
+      saldoEl.className = 'valor ' + (saldo < 0 ? 'negativo' : 'verde');
+      document.getElementById('a-pagar').textContent = dinheiro(totalAPagar);
+
+      const listaContas = document.getElementById('lista-contas');
+      listaContas.innerHTML = '';
+      if (contasPendentes.length === 0) {
+        listaContas.innerHTML = '<p class="vazio">Nenhuma conta pendente.</p>';
+      } else {
+        contasPendentes.slice().sort((a, b) => a.vencimento.localeCompare(b.vencimento)).forEach(c => {
+          const data = new Date(c.vencimento + 'T00:00:00');
+          const vencido = data < new Date(new Date().toDateString());
+          const item = document.createElement('div');
+          item.className = 'item';
+          item.innerHTML =
+            '<div class="item-info"><strong>' + dinheiro(c.valor) + ' · ' + c.descricao + '</strong>' +
+            '<span class="' + (vencido ? 'vencido' : '') + '">Vence: ' + data.toLocaleDateString('pt-BR') + '</span></div>' +
+            '<div style="display:flex;gap:6px">' +
+            '<button class="btn-pagar" onclick="pagarConta(\'' + c.id + '\')">Pagar</button>' +
+            '<button class="btn-apagar" onclick="apagarConta(\'' + c.id + '\')">Apagar</button></div>';
+          listaContas.appendChild(item);
+        });
+      }
+      contas.filter(c => c.pago).forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'item pago';
+        item.innerHTML =
+          '<div class="item-info"><strong>' + dinheiro(c.valor) + ' · ' + c.descricao + '</strong>Pago</div>' +
+          '<button class="btn-apagar" onclick="desfazerPagamento(\'' + c.id + '\')">Desfazer</button>';
+        listaContas.appendChild(item);
+      });
+
+      const listaGastos = document.getElementById('lista-gastos');
+      listaGastos.innerHTML = '';
+      if (gastos.length === 0) listaGastos.innerHTML = '<p class="vazio">Nenhum gasto registrado.</p>';
+      else gastos.slice().reverse().forEach(g => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = '<div class="item-info"><strong>' + dinheiro(g.valor) + '</strong>' +
+          g.categoria + ' · ' + new Date(g.data).toLocaleDateString('pt-BR') + '</div>' +
+          '<button class="btn-apagar" onclick="apagarGasto(\'' + g.id + '\')">Apagar</button>';
+        listaGastos.appendChild(item);
+      });
+
+      const listaReceitas = document.getElementById('lista-receitas');
+      listaReceitas.innerHTML = '';
+      if (receitas.length === 0) listaReceitas.innerHTML = '<p class="vazio">Nenhuma receita registrada.</p>';
+      else receitas.slice().reverse().forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = '<div class="item-info"><strong>' + dinheiro(r.valor) + '</strong>' +
+          r.categoria + ' · ' + new Date(r.data).toLocaleDateString('pt-BR') + '</div>' +
+          '<button class="btn-apagar" onclick="apagarReceita(\'' + r.id + '\')">Apagar</button>';
+        listaReceitas.appendChild(item);
+      });
+    }
+
+    // ---------- TREINOS ----------
+    function adicionarTreino() {
+      const data = document.getElementById('treino-data').value;
+      const tipo = document.getElementById('treino-tipo').value;
+      const exercicio = document.getElementById('treino-exercicio').value.trim();
+      const series = parseInt(document.getElementById('treino-series').value);
+      const reps = parseInt(document.getElementById('treino-reps').value);
+      const carga = parseFloat(document.getElementById('treino-carga').value);
+      if (!data) { alert('Escolha a data.'); return; }
+      if (!exercicio) { alert('Digite o exercício.'); return; }
+      if (isNaN(series) || series <= 0) { alert('Séries inválidas.'); return; }
+      if (isNaN(reps) || reps <= 0) { alert('Reps inválidas.'); return; }
+      const lista = pegar('treinos');
+      lista.push({ id: novoId(), data: data, tipo: tipo, exercicio: exercicio, series: series, reps: reps, carga: isNaN(carga) ? null : carga });
+      salvar('treinos', lista);
+      document.getElementById('treino-exercicio').value = '';
+      document.getElementById('treino-series').value = '';
+      document.getElementById('treino-reps').value = '';
+      document.getElementById('treino-carga').value = '';
+      renderizarTreinos(); verificarLembretes();
+    }
+    function apagarTreino(id) { salvar('treinos', pegar('treinos').filter(t => t.id !== id)); renderizarTreinos(); }
+
+    function calcularStreakPorDatas(datas) {
+      const dias = [...new Set(datas)].sort().reverse();
+      if (dias.length === 0) return 0;
+      const set = new Set(dias);
+      const fmt = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      const atual = new Date(hojeYMD() + 'T00:00:00');
+      if (!set.has(fmt(atual))) {
+        atual.setDate(atual.getDate() - 1);
+        if (!set.has(fmt(atual))) return 0;
+      }
+      let streak = 0;
+      while (set.has(fmt(atual))) { streak++; atual.setDate(atual.getDate() - 1); }
+      return streak;
+    }
+    function diasNoMesAtual(datas) {
+      const agora = new Date();
+      const ym = agora.getFullYear() + '-' + String(agora.getMonth()+1).padStart(2,'0');
+      return new Set(datas.filter(d => d.startsWith(ym))).size;
+    }
+
+    function renderizarTreinos() {
+      const treinos = pegar('treinos');
+      document.getElementById('streak').textContent = calcularStreakPorDatas(treinos.map(t => t.data));
+      document.getElementById('total-mes').textContent = diasNoMesAtual(treinos.map(t => t.data));
+      const lista = document.getElementById('lista-treinos');
+      lista.innerHTML = '';
+      if (treinos.length === 0) { lista.innerHTML = '<p class="vazio">Nenhum treino registrado ainda.</p>'; return; }
+      const porDia = {};
+      treinos.forEach(t => { if (!porDia[t.data]) porDia[t.data] = []; porDia[t.data].push(t); });
+      Object.keys(porDia).sort().reverse().forEach(data => {
+        const titulo = document.createElement('div');
+        titulo.className = 'dia-titulo';
+        const d = new Date(data + 'T00:00:00');
+        titulo.textContent = d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+        lista.appendChild(titulo);
+        porDia[data].forEach(t => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          const cargaTexto = t.carga ? ' · ' + t.carga + ' kg' : '';
+          item.innerHTML =
+            '<div class="item-info"><strong>' + t.exercicio + '</strong>' +
+            '<span class="tag">' + t.tipo + '</span>' + t.series + 'x' + t.reps + cargaTexto + '</div>' +
+            '<button class="btn-apagar" onclick="apagarTreino(\'' + t.id + '\')">Apagar</button>';
+          lista.appendChild(item);
+        });
+      });
+    }
+
+    // ---------- LEITURA ----------
+    function adicionarLivro() {
+      const titulo = document.getElementById('livro-titulo').value.trim();
+      const autor = document.getElementById('livro-autor').value.trim();
+      const totalPaginas = parseInt(document.getElementById('livro-total').value);
+      if (!titulo) { alert('Digite o título do livro.'); return; }
+      if (isNaN(totalPaginas) || totalPaginas <= 0) { alert('Total de páginas inválido.'); return; }
+      const livros = pegar('livros');
+      livros.push({ id: novoId(), titulo: titulo, autor: autor || '', total_paginas: totalPaginas, pagina_atual: 0 });
+      salvar('livros', livros);
+      document.getElementById('livro-titulo').value = '';
+      document.getElementById('livro-autor').value = '';
+      document.getElementById('livro-total').value = '';
+      renderizarLeitura();
+    }
+    function registrarLeitura(livroId) {
+      const input = document.getElementById('leitura-' + livroId);
+      const paginas = parseInt(input.value);
+      if (isNaN(paginas) || paginas <= 0) { alert('Digite quantas páginas leu.'); return; }
+      const livros = pegar('livros');
+      const livro = livros.find(l => l.id === livroId);
+      if (!livro) return;
+      const restantes = livro.total_paginas - livro.pagina_atual;
+      const reais = Math.min(paginas, restantes);
+      livro.pagina_atual += reais;
+      salvar('livros', livros);
+      const sessoes = pegar('sessoes_leitura');
+      sessoes.push({ id: novoId(), livro_id: livroId, livro_titulo: livro.titulo, paginas: reais, data: hojeYMD() });
+      salvar('sessoes_leitura', sessoes);
+      renderizarLeitura(); verificarLembretes();
+    }
+    function apagarLivro(id) {
+      if (!confirm('Apagar este livro e todas as sessões dele?')) return;
+      salvar('livros', pegar('livros').filter(l => l.id !== id));
+      salvar('sessoes_leitura', pegar('sessoes_leitura').filter(s => s.livro_id !== id));
+      renderizarLeitura();
+    }
+    function renderizarLeitura() {
+      const livros = pegar('livros');
+      const sessoes = pegar('sessoes_leitura');
+      document.getElementById('leitura-streak').textContent = calcularStreakPorDatas(sessoes.map(s => s.data));
+      const agora = new Date();
+      const ym = agora.getFullYear() + '-' + String(agora.getMonth()+1).padStart(2,'0');
+      document.getElementById('leitura-paginas-mes').textContent = sessoes.filter(s => s.data.startsWith(ym)).reduce((sum, s) => sum + s.paginas, 0);
+
+      const lista = document.getElementById('lista-livros');
+      lista.innerHTML = '';
+      if (livros.length === 0) {
+        lista.innerHTML = '<p class="vazio">Nenhum livro cadastrado ainda.</p>';
+      } else {
+        livros.forEach(livro => {
+          const pct = Math.min(100, Math.round((livro.pagina_atual / livro.total_paginas) * 100));
+          const completo = livro.pagina_atual >= livro.total_paginas;
+          const card = document.createElement('div');
+          card.className = 'livro-card';
+          card.innerHTML =
+            '<div class="livro-titulo">' + escapeHtml(livro.titulo) + (completo ? ' <span class="tag concluido">Concluído</span>' : '') + '</div>' +
+            (livro.autor ? '<div class="livro-autor">' + escapeHtml(livro.autor) + '</div>' : '') +
+            '<div class="progresso-bar"><div class="progresso-fill' + (completo ? ' completo' : '') + '" style="width:' + pct + '%"></div></div>' +
+            '<div class="progresso-texto">' + livro.pagina_atual + ' / ' + livro.total_paginas + ' páginas (' + pct + '%)</div>' +
+            '<div class="livro-acoes">' +
+              (completo ? '' : '<input id="leitura-' + livro.id + '" type="number" inputmode="numeric" placeholder="Páginas lidas hoje"><button class="btn-leitura" onclick="registrarLeitura(\'' + livro.id + '\')">Registrar</button>') +
+              '<button class="btn-apagar" onclick="apagarLivro(\'' + livro.id + '\')">Apagar</button>' +
+            '</div>';
+          lista.appendChild(card);
+        });
+      }
+      const listaSessoes = document.getElementById('lista-sessoes');
+      listaSessoes.innerHTML = '';
+      if (sessoes.length === 0) {
+        listaSessoes.innerHTML = '<p class="vazio">Nenhuma sessão de leitura ainda.</p>';
+      } else {
+        sessoes.slice().reverse().slice(0, 15).forEach(s => {
+          const item = document.createElement('div');
+          item.className = 'item';
+          const d = new Date(s.data + 'T00:00:00');
+          item.innerHTML = '<div class="item-info"><strong>' + s.paginas + ' páginas</strong>' +
+            escapeHtml(s.livro_titulo) + ' · ' + d.toLocaleDateString('pt-BR') + '</div>';
+          listaSessoes.appendChild(item);
+        });
+      }
+    }
+
+    // ---------- AJUSTES E LEMBRETES ----------
+    const CONFIG_PADRAO = {
+      gastos: { ativo: true, horario: '20:00' },
+      treinos: { ativo: true, horario: '18:00' },
+      leitura: { ativo: true, horario: '21:00' }
+    };
+    function pegarConfig() {
+      try {
+        const c = JSON.parse(localStorage.getItem('config_lembretes'));
+        if (c && c.gastos && c.treinos && c.leitura) return c;
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(CONFIG_PADRAO));
+    }
+    function salvarConfig(c) { localStorage.setItem('config_lembretes', JSON.stringify(c)); }
+
+    function preencherAjustesForm() {
+      const c = pegarConfig();
+      document.getElementById('lembrete-gastos-ativo').checked = c.gastos.ativo;
+      document.getElementById('lembrete-gastos-horario').value = c.gastos.horario;
+      document.getElementById('lembrete-treinos-ativo').checked = c.treinos.ativo;
+      document.getElementById('lembrete-treinos-horario').value = c.treinos.horario;
+      document.getElementById('lembrete-leitura-ativo').checked = c.leitura.ativo;
+      document.getElementById('lembrete-leitura-horario').value = c.leitura.horario;
+      atualizarStatusNotificacao();
+    }
+
+    function salvarAjustes() {
+      const c = {
+        gastos: { ativo: document.getElementById('lembrete-gastos-ativo').checked, horario: document.getElementById('lembrete-gastos-horario').value || '20:00' },
+        treinos: { ativo: document.getElementById('lembrete-treinos-ativo').checked, horario: document.getElementById('lembrete-treinos-horario').value || '18:00' },
+        leitura: { ativo: document.getElementById('lembrete-leitura-ativo').checked, horario: document.getElementById('lembrete-leitura-horario').value || '21:00' }
+      };
+      salvarConfig(c);
+      alert('Lembretes salvos!');
+      verificarLembretes();
+    }
+
+    function atualizarStatusNotificacao() {
+      const el = document.getElementById('status-notificacao');
+      if (!('Notification' in window)) {
+        el.textContent = '⚠️ Este navegador não suporta notificações. Os lembretes aparecerão no topo do app.';
+        return;
+      }
+      if (Notification.permission === 'granted') el.textContent = '✅ Notificações do sistema ativadas.';
+      else if (Notification.permission === 'denied') el.textContent = '🚫 Notificações bloqueadas. Ative nas configurações do Safari.';
+      else el.textContent = 'Toque em "Ativar notificações" para permitir. No iPhone, adicione o site à Tela de Início (iOS 16.4+).';
+    }
+
+    function pedirPermissaoNotificacao() {
+      if (!('Notification' in window)) { alert('Este navegador não suporta notificações.'); return; }
+      Notification.requestPermission().then(function(p) {
+        atualizarStatusNotificacao();
+        if (p === 'granted') {
+          try { new Notification('Notificações ativadas!', { body: 'Você receberá lembretes do app.' }); } catch (e) {}
+        }
+      });
+    }
+
+    function testarNotificacao() {
+      if (!('Notification' in window) || Notification.permission !== 'granted') {
+        alert('Ative as notificações primeiro.');
+        return;
+      }
+      try { new Notification('Teste de notificação', { body: 'Se você está vendo isso, está funcionando!' }); }
+      catch (e) { alert('Erro ao testar: ' + e.message); }
+    }
+
+    function minutosDoHorario(hhmm) {
+      const [h, m] = hhmm.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function calcularAvisos() {
+      const config = pegarConfig();
+      const agora = new Date();
+      const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+      const hoje = hojeYMD();
+      const avisos = [];
+
+      if (config.gastos.ativo && minutosAgora >= minutosDoHorario(config.gastos.horario)) {
+        const gastos = pegar('gastos');
+        if (!gastos.some(g => (g.data || '').startsWith(hoje))) {
+          avisos.push({ tipo: 'gastos', texto: '💰 Não esqueça de registrar seus gastos de hoje!' });
+        }
+      }
+      if (config.treinos.ativo && minutosAgora >= minutosDoHorario(config.treinos.horario)) {
+        const treinos = pegar('treinos');
+        if (!treinos.some(t => t.data === hoje)) {
+          avisos.push({ tipo: 'treinos', texto: '🏋️ Que tal treinar hoje? Ainda não registrou.' });
+        }
+      }
+      if (config.leitura.ativo && minutosAgora >= minutosDoHorario(config.leitura.horario)) {
+        const sessoes = pegar('sessoes_leitura');
+        if (!sessoes.some(s => s.data === hoje)) {
+          avisos.push({ tipo: 'leitura', texto: '📚 Você ainda não leu hoje. Bora?' });
+        }
+      }
+      return avisos;
+    }
+
+    function verificarLembretes() {
+      const avisos = calcularAvisos();
+      const banner = document.getElementById('banner-lembretes');
+      const dispensado = sessionStorage.getItem('banner_dispensado_' + hojeYMD());
+
+      if (avisos.length === 0 || dispensado) {
+        banner.style.display = 'none';
+      } else {
+        banner.innerHTML = '<strong>🔔 Lembretes</strong>' +
+          avisos.map(a => a.texto).join('<br>') +
+          '<button class="fechar" onclick="dispensarBanner()">×</button>';
+        banner.style.display = 'block';
+      }
+
+      // Dispara notificação do sistema (máx. 1x por tipo por dia)
+      if (avisos.length > 0 && 'Notification' in window && Notification.permission === 'granted') {
+        let estado = {};
+        try { estado = JSON.parse(localStorage.getItem('notif_estado') || '{}'); } catch (e) {}
+        const hoje = hojeYMD();
+        if (estado.dia !== hoje) estado = { dia: hoje, tipos: [] };
+        avisos.forEach(a => {
+          if (!estado.tipos.includes(a.tipo)) {
+            try { new Notification('Lembrete do app', { body: a.texto }); estado.tipos.push(a.tipo); } catch (e) {}
+          }
+        });
+        localStorage.setItem('notif_estado', JSON.stringify(estado));
+      }
+    }
+
+    function dispensarBanner() {
+      sessionStorage.setItem('banner_dispensado_' + hojeYMD(), '1');
+      document.getElementById('banner-lembretes').style.display = 'none';
+    }
+
+    // ---------- INICIALIZAÇÃO ----------
+    document.getElementById('treino-data').value = hojeYMD();
+    renderizarFinancas();
+    renderizarTreinos();
+    renderizarLeitura();
+    verificarLembretes();
+  </script>
+
+</body>
+</html>
